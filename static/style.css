@@ -1,0 +1,105 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 40px 20px;
+
+    font-family: Arial, sans-serif;
+
+    background: #111827;
+    color: #f9fafb;
+}
+
+main {
+    width: min(700px, 100%);
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+h2 {
+    margin-top: 0;
+}
+
+#connection-status {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #9ca3af;
+}
+
+section {
+    background: #1f2937;
+
+    padding: 25px;
+
+    border-radius: 12px;
+
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+
+    margin-top: 15px;
+    margin-bottom: 6px;
+
+    font-weight: bold;
+}
+
+input {
+    width: 100%;
+
+    padding: 12px;
+
+    border: 1px solid #4b5563;
+    border-radius: 8px;
+
+    background: #111827;
+    color: #f9fafb;
+
+    font-size: 16px;
+}
+
+button {
+    margin-top: 20px;
+
+    padding: 12px 18px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #7c3aed;
+    color: white;
+
+    font-size: 16px;
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+button:hover {
+    background: #6d28d9;
+}
+
+button:disabled {
+    background: #4b5563;
+    cursor: not-allowed;
+}
+
+#player-list {
+    padding-left: 20px;
+}
+
+#player-list li {
+    margin-bottom: 10px;
+}
+
+#lobby-message,
+#ready-message {
+    margin-top: 15px;
+}

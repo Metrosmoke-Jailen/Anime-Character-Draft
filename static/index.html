@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Anime Character Draft</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <main>
+
+        <h1>🎴 Anime Character Draft</h1>
+
+        <p id="connection-status">
+            Connecting to server...
+        </p>
+
+
+        <!-- ========================= -->
+        <!-- LOBBY -->
+        <!-- ========================= -->
+
+        <section id="lobby">
+
+            <h2>Join a Draft</h2>
+
+            <label for="username">
+                Username
+            </label>
+
+            <input
+                id="username"
+                type="text"
+                placeholder="Enter your username"
+            >
+
+
+            <label for="room-code">
+                Room Code
+            </label>
+
+            <input
+                id="room-code"
+                type="text"
+                placeholder="Example: A7K92"
+            >
+
+
+            <button id="join-button">
+                Join Room
+            </button>
+
+            <p id="lobby-message"></p>
+
+        </section>
+
+
+        <!-- ========================= -->
+        <!-- ROOM -->
+        <!-- ========================= -->
+
+        <section id="room" hidden>
+
+            <h2>
+                Room:
+                <span id="room-display"></span>
+            </h2>
+
+
+            <h3>
+                Players
+            </h3>
+
+            <ul id="player-list"></ul>
+
+
+            <button id="ready-button">
+                Ready
+            </button>
+
+            <p id="ready-message"></p>
+
+        </section>
+
+    </main>
+
+
+    <!-- Socket.IO client library -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- Our client JavaScript -->
+    <script src="client.js"></script>
+
+</body>
+
+</html>
