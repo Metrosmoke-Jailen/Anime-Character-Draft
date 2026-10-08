@@ -87,7 +87,6 @@ const characters = [
 // HELPER FUNCTIONS
 // ========================================
 
-// Find the room a socket belongs to
 function getPlayerRoom(socket) {
 
     return [...socket.rooms].find(
@@ -97,46 +96,62 @@ function getPlayerRoom(socket) {
 }
 
 
-// Check whether all players are ready
 function allPlayersReady(room) {
 
     const players =
-        Object.values(rooms[room].players);
+        Object.values(
+            rooms[room].players
+        );
 
     return (
         players.length >= 2 &&
         players.every(
-            (player) => player.ready
+            (player) =>
+                player.ready
         )
     );
 
 }
 
 
-// Check whether every player has
-// picked during the current round
 function allPlayersPicked(room) {
 
     const players =
-        Object.values(rooms[room].players);
+        Object.values(
+            rooms[room].players
+        );
 
     return players.every(
         (player) =>
-            player.team.length === rooms[room].round
+            player.team.length ===
+            rooms[room].round
     );
 
 }
 
 
-// Get random characters
-function getRandomCharacters(amount) {
+function getRandomCharacters(
+    amount,
+    pickedCharacters = []
+) {
+
+    const availableCharacters =
+        characters.filter(
+            (character) =>
+                !pickedCharacters.includes(
+                    character.id
+                )
+        );
 
     const shuffled =
-        [...characters].sort(
+        [...availableCharacters].sort(
             () => Math.random() - 0.5
         );
 
-    return shuffled.slice(0, amount);
+    return shuffled.slice(
+        0,
+        amount
+    );
 
 }
 
@@ -147,22 +162,35 @@ function getRandomCharacters(amount) {
 
 function startDraft(room) {
 
-    const roomData = rooms[room];
+    const roomData =
+        rooms[room];
 
-    roomData.state = "drafting";
-    roomData.round = 1;
+    roomData.state =
+        "drafting";
+
+    roomData.round =
+        1;
 
     roomData.currentCharacters =
-        getRandomCharacters(3);
+        getRandomCharacters(
+            3,
+            roomData.pickedCharacters
+        );
 
     console.log(
         `Round ${roomData.round} started in room ${room}`
     );
 
-    io.to(room).emit("start-draft", {
-        round: roomData.round,
-        characters: roomData.currentCharacters
-    });
+    io.to(room).emit(
+        "start-draft",
+        {
+            round:
+                roomData.round,
+
+            characters:
+                roomData.currentCharacters
+        }
+    );
 
 }
 
@@ -173,34 +201,67 @@ function startDraft(room) {
 
 function nextRound(room) {
 
-    const roomData = rooms[room];
+    const roomData =
+        rooms[room];
 
     roomData.round += 1;
 
-
-    // End after 5 rounds
-    if (roomData.round > 5) {
+    if (
+        roomData.round > 5
+    ) {
 
         endDraft(room);
 
         return;
+
     }
 
-
-    // Generate new characters
     roomData.currentCharacters =
-        getRandomCharacters(3);
-
+        getRandomCharacters(
+            3,
+            roomData.pickedCharacters
+        );
 
     console.log(
         `Starting round ${roomData.round} in room ${room}`
     );
 
+    io.to(room).emit(
+        "next-round",
+        {
+            round:
+                roomData.round,
 
-    io.to(room).emit("next-round", {
-        round: roomData.round,
-        characters: roomData.currentCharacters
-    });
+            characters:
+                roomData.currentCharacters
+        }
+    );
+
+}
+
+
+// ========================================
+// TEAM POWER
+// ========================================
+
+function calculateTeamPower(
+    team
+) {
+
+    return team.reduce(
+        (
+            total,
+            character
+        ) => {
+
+            return (
+                total +
+                character.power
+            );
+
+        },
+        0
+    );
 
 }
 
@@ -211,15 +272,73 @@ function nextRound(room) {
 
 function endDraft(room) {
 
-    // Results will be implemented
-    // in a later step.
+    const roomData =
+        rooms[room];
 
-    const roomData = rooms[room];
+    roomData.state =
+        "finished";
 
-    roomData.state = "finished";
+    const players =
+        Object.values(
+            roomData.players
+        );
+
+    const results =
+        players.map(
+            (player) => {
+
+                const score =
+                    calculateTeamPower(
+                        player.team
+                    );
+
+                return {
+                    id:
+                        player.id,
+
+                    username:
+                        player.username,
+
+                    team:
+                        player.team,
+
+                    score:
+                        score
+                };
+
+            }
+        );
+
+    const highestScore =
+        Math.max(
+            ...results.map(
+                (player) =>
+                    player.score
+            )
+        );
+
+    const winners =
+        results.filter(
+            (player) =>
+                player.score ===
+                highestScore
+        );
 
     console.log(
         `Draft finished in room ${room}`
+    );
+
+    console.log(
+        "Results:",
+        results
+    );
+
+    io.to(room).emit(
+        "draft-ended",
+        {
+            results,
+            winners
+        }
     );
 
 }
@@ -229,328 +348,570 @@ function endDraft(room) {
 // SOCKET.IO
 // ========================================
 
-io.on("connection", (socket) => {
+io.on(
+    "connection",
+    (socket) => {
 
-    console.log(
-        "Player connected:",
-        socket.id
-    );
-
-
-    // ====================================
-    // JOIN ROOM
-    // ====================================
-
-    socket.on(
-        "join-room",
-        ({ username, room }) => {
-
-            // Create room if necessary
-            if (!rooms[room]) {
-
-                rooms[room] = {
-
-                    players: {},
-
-                    round: 1,
-
-                    state: "waiting",
-
-                    currentCharacters: [],
-
-                    draftHistory: []
-
-                };
-
-            }
+        console.log(
+            "Player connected:",
+            socket.id
+        );
 
 
-            // Add player
-            rooms[room].players[socket.id] = {
+        // ====================================
+        // JOIN ROOM
+        // ====================================
 
-                id: socket.id,
+        socket.on(
+            "join-room",
+            ({ username, room }) => {
 
-                username: username,
+                username =
+                    username.trim();
 
-                team: [],
-
-                ready: false
-
-            };
-
-
-            // Join Socket.IO room
-            socket.join(room);
-
-
-            console.log(
-                `${username} joined room ${room}`
-            );
+                room =
+                    room
+                        .trim()
+                        .toUpperCase();
 
 
-            // Tell everyone about
-            // the updated player list
-            io.to(room).emit(
-                "room-update",
-                {
-                    players:
-                        Object.values(
-                            rooms[room].players
-                        )
+                // ====================================
+                // VALIDATE INPUT
+                // ====================================
+
+                if (
+                    !username ||
+                    !room
+                ) {
+
+                    socket.emit(
+                        "lobby-error",
+                        {
+                            message:
+                                "Username and room code are required."
+                        }
+                    );
+
+                    return;
+
                 }
-            );
-
-        }
-    );
 
 
-    // ====================================
-    // PLAYER READY
-    // ====================================
+                // ====================================
+                // CREATE ROOM
+                // ====================================
 
-    socket.on(
-        "player-ready",
-        () => {
+                if (!rooms[room]) {
 
-            const room =
-                getPlayerRoom(socket);
+                    rooms[room] = {
 
+                        players: {},
 
-            if (!room) {
-                return;
-            }
+                        round: 1,
 
+                        state:
+                            "waiting",
 
-            const roomData =
-                rooms[room];
+                        currentCharacters:
+                            [],
 
+                        pickedCharacters:
+                            [],
 
-            if (!roomData) {
-                return;
-            }
+                        draftHistory:
+                            []
 
+                    };
 
-            const player =
-                roomData.players[socket.id];
-
-
-            if (!player) {
-                return;
-            }
-
-
-            // Mark player ready
-            player.ready = true;
-
-
-            console.log(
-                `${player.username} is ready`
-            );
-
-
-            // Update everyone
-            io.to(room).emit(
-                "room-update",
-                {
-                    players:
-                        Object.values(
-                            roomData.players
-                        )
                 }
-            );
 
 
-            // Start game when everyone
-            // is ready
-            if (allPlayersReady(room)) {
-
-                console.log(
-                    `Draft started in room ${room}`
-                );
-
-                startDraft(room);
-
-            }
-
-        }
-    );
+                const roomData =
+                    rooms[room];
 
 
-    // ====================================
-    // PICK CHARACTER
-    // ====================================
+                // ====================================
+                // CHECK GAME STATE
+                // ====================================
 
-    socket.on(
-        "pick-character",
-        ({ characterId }) => {
+                if (
+                    roomData.state !==
+                    "waiting"
+                ) {
 
-            const room =
-                getPlayerRoom(socket);
+                    socket.emit(
+                        "lobby-error",
+                        {
+                            message:
+                                "This draft has already started."
+                        }
+                    );
 
+                    return;
 
-            if (!room) {
-                return;
-            }
-
-
-            const roomData =
-                rooms[room];
-
-
-            if (!roomData) {
-                return;
-            }
+                }
 
 
-            // Only allow picks during drafting
-            if (
-                roomData.state !== "drafting"
-            ) {
-                return;
-            }
+                // ====================================
+                // CHECK ROOM SIZE
+                // ====================================
+
+                if (
+                    Object.keys(
+                        roomData.players
+                    ).length >= 4
+                ) {
+
+                    socket.emit(
+                        "lobby-error",
+                        {
+                            message:
+                                "This room is full."
+                        }
+                    );
+
+                    return;
+
+                }
 
 
-            // Find character in current round
-            const character =
-                roomData.currentCharacters.find(
-                    (character) =>
-                        character.id === characterId
-                );
+                // ====================================
+                // CHECK USERNAME
+                // ====================================
+
+                const usernameTaken =
+                    Object.values(
+                        roomData.players
+                    ).some(
+                        (player) =>
+                            player.username
+                                .toLowerCase() ===
+                            username.toLowerCase()
+                    );
+
+                if (
+                    usernameTaken
+                ) {
+
+                    socket.emit(
+                        "lobby-error",
+                        {
+                            message:
+                                "That username is already taken in this room."
+                        }
+                    );
+
+                    return;
+
+                }
 
 
-            // Character doesn't exist
-            if (!character) {
-                return;
-            }
+                // ====================================
+                // ADD PLAYER
+                // ====================================
 
+                roomData.players[
+                    socket.id
+                ] = {
 
-            // Character already picked
-            if (character.pickedBy) {
-                return;
-            }
-
-
-            // Find player
-            const player =
-                roomData.players[socket.id];
-
-
-            if (!player) {
-                return;
-            }
-
-
-            // Claim character
-            character.pickedBy =
-                socket.id;
-
-
-            // Add character to team
-            player.team.push(character);
-
-
-            console.log(
-                `${player.username} picked ${character.name}`
-            );
-
-
-            // Tell everyone about the pick
-            io.to(room).emit(
-                "draft-update",
-                {
-                    characterId:
-                        character.id,
-
-                    playerId:
+                    id:
                         socket.id,
 
                     username:
-                        player.username
-                }
-            );
+                        username,
+
+                    room:
+                        room,
+
+                    team:
+                        [],
+
+                    ready:
+                        false
+
+                };
 
 
-            // Check whether everyone
-            // has picked this round
-            if (allPlayersPicked(room)) {
-
-                setTimeout(
-                    () => {
-                        nextRound(room);
-                    },
-                    1000
+                socket.join(
+                    room
                 );
 
-            }
-
-        }
-    );
-
-
-    // ====================================
-    // DISCONNECT
-    // ====================================
-
-    socket.on(
-        "disconnect",
-        () => {
-
-            console.log(
-                "Player disconnected:",
-                socket.id
-            );
-
-
-            const room =
-                getPlayerRoom(socket);
-
-
-            if (!room) {
-                return;
-            }
-
-
-            if (!rooms[room]) {
-                return;
-            }
-
-
-            // Remove player
-            delete rooms[room]
-                .players[socket.id];
-
-
-            // Notify remaining players
-            io.to(room).emit(
-                "room-update",
-                {
-                    players:
-                        Object.values(
-                            rooms[room].players
-                        )
-                }
-            );
-
-
-            // Delete empty room
-            if (
-                Object.keys(
-                    rooms[room].players
-                ).length === 0
-            ) {
-
-                delete rooms[room];
 
                 console.log(
-                    `Room ${room} deleted`
+                    `${username} joined room ${room}`
+                );
+
+
+                // ====================================
+                // UPDATE ROOM
+                // ====================================
+
+                io.to(room).emit(
+                    "room-update",
+                    {
+                        players:
+                            Object.values(
+                                roomData.players
+                            )
+                    }
                 );
 
             }
+        );
 
-        }
-    );
 
-});
+        // ====================================
+        // PLAYER READY
+        // ====================================
+
+        socket.on(
+            "player-ready",
+            () => {
+
+                const room =
+                    getPlayerRoom(
+                        socket
+                    );
+
+                if (!room) {
+                    return;
+                }
+
+                const roomData =
+                    rooms[room];
+
+                if (!roomData) {
+                    return;
+                }
+
+                if (
+                    roomData.state !==
+                    "waiting"
+                ) {
+                    return;
+                }
+
+                const player =
+                    roomData.players[
+                        socket.id
+                    ];
+
+                if (!player) {
+                    return;
+                }
+
+                if (player.ready) {
+                    return;
+                }
+
+                player.ready =
+                    true;
+
+                console.log(
+                    `${player.username} is ready`
+                );
+
+                io.to(room).emit(
+                    "room-update",
+                    {
+                        players:
+                            Object.values(
+                                roomData.players
+                            )
+                    }
+                );
+
+                if (
+                    allPlayersReady(
+                        room
+                    )
+                ) {
+
+                    console.log(
+                        `Draft started in room ${room}`
+                    );
+
+                    startDraft(
+                        room
+                    );
+
+                }
+
+            }
+        );
+
+
+        // ====================================
+        // PICK CHARACTER
+        // ====================================
+
+        socket.on(
+            "pick-character",
+            ({ characterId }) => {
+
+                const room =
+                    getPlayerRoom(
+                        socket
+                    );
+
+                if (!room) {
+                    return;
+                }
+
+                const roomData =
+                    rooms[room];
+
+                if (!roomData) {
+                    return;
+                }
+
+
+                // ====================================
+                // CHECK GAME STATE
+                // ====================================
+
+                if (
+                    roomData.state !==
+                    "drafting"
+                ) {
+
+                    return;
+
+                }
+
+
+                // ====================================
+                // CHECK CHARACTER
+                // ====================================
+
+                const character =
+                    roomData.currentCharacters.find(
+                        (character) =>
+                            character.id ===
+                            characterId
+                    );
+
+                if (!character) {
+
+                    return;
+
+                }
+
+
+                // ====================================
+                // CHECK IF ALREADY PICKED
+                // ====================================
+
+                if (
+                    character.pickedBy
+                ) {
+
+                    return;
+
+                }
+
+
+                // ====================================
+                // GET PLAYER
+                // ====================================
+
+                const player =
+                    roomData.players[
+                        socket.id
+                    ];
+
+                if (!player) {
+
+                    return;
+
+                }
+
+
+                // ====================================
+                // PICK CHARACTER
+                // ====================================
+
+                character.pickedBy =
+                    socket.id;
+
+                player.team.push(
+                    character
+                );
+
+                roomData.pickedCharacters.push(
+                    character.id
+                );
+
+
+                console.log(
+                    `${player.username} picked ${character.name}`
+                );
+
+
+                // ====================================
+                // BROADCAST PICK
+                // ====================================
+
+                io.to(room).emit(
+                    "draft-update",
+                    {
+                        characterId:
+                            character.id,
+
+                        playerId:
+                            socket.id,
+
+                        username:
+                            player.username
+                    }
+                );
+
+
+                // ====================================
+                // CHECK ROUND COMPLETE
+                // ====================================
+
+                if (
+                    allPlayersPicked(
+                        room
+                    )
+                ) {
+
+                    setTimeout(
+                        () => {
+
+                            if (
+                                rooms[room] &&
+                                rooms[room].state ===
+                                    "drafting"
+                            ) {
+
+                                nextRound(
+                                    room
+                                );
+
+                            }
+
+                        },
+                        1000
+                    );
+
+                }
+
+            }
+        );
+
+
+        // ====================================
+        // DISCONNECT
+        // ====================================
+
+        socket.on(
+            "disconnect",
+            () => {
+
+                console.log(
+                    "Player disconnected:",
+                    socket.id
+                );
+
+                let playerRoom =
+                    null;
+
+
+                // ====================================
+                // FIND PLAYER'S ROOM
+                // ====================================
+
+                for (
+                    const roomName in rooms
+                ) {
+
+                    if (
+                        rooms[roomName]
+                            .players[
+                                socket.id
+                            ]
+                    ) {
+
+                        playerRoom =
+                            roomName;
+
+                        break;
+
+                    }
+
+                }
+
+
+                if (!playerRoom) {
+                    return;
+                }
+
+
+                const roomData =
+                    rooms[playerRoom];
+
+                const player =
+                    roomData.players[
+                        socket.id
+                    ];
+
+
+                console.log(
+                    `${player.username} left room ${playerRoom}`
+                );
+
+
+                // ====================================
+                // REMOVE PLAYER
+                // ====================================
+
+                delete roomData.players[
+                    socket.id
+                ];
+
+
+                // ====================================
+                // UPDATE REMAINING PLAYERS
+                // ====================================
+
+                io.to(playerRoom).emit(
+                    "room-update",
+                    {
+                        players:
+                            Object.values(
+                                roomData.players
+                            )
+                    }
+                );
+
+
+                // ====================================
+                // DELETE EMPTY ROOM
+                // ====================================
+
+                if (
+                    Object.keys(
+                        roomData.players
+                    ).length === 0
+                ) {
+
+                    delete rooms[
+                        playerRoom
+                    ];
+
+                    console.log(
+                        `Room ${playerRoom} deleted`
+                    );
+
+                }
+
+            }
+        );
+
+    }
+);
 
 
 // ========================================

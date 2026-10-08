@@ -10,7 +10,9 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Anime Character Draft</title>
+    <title>
+        Anime Character Draft
+    </title>
 
     <link
         rel="stylesheet"
@@ -23,10 +25,6 @@
 
     <main>
 
-        <!-- ============================== -->
-        <!-- HEADER -->
-        <!-- ============================== -->
-
         <h1>
             🎴 Anime Character Draft
         </h1>
@@ -36,16 +34,15 @@
         </p>
 
 
-        <!-- ============================== -->
-        <!-- LOBBY -->
-        <!-- ============================== -->
+        <!-- =====================================
+             LOBBY
+        ====================================== -->
 
         <section id="lobby">
 
             <h2>
                 Join a Draft
             </h2>
-
 
             <label for="username">
                 Username
@@ -57,7 +54,6 @@
                 placeholder="Enter your username"
             >
 
-
             <label for="room-code">
                 Room Code
             </label>
@@ -68,20 +64,18 @@
                 placeholder="Example: A7K92"
             >
 
-
             <button id="join-button">
                 Join Room
             </button>
-
 
             <p id="lobby-message"></p>
 
         </section>
 
 
-        <!-- ============================== -->
-        <!-- ROOM -->
-        <!-- ============================== -->
+        <!-- =====================================
+             ROOM
+        ====================================== -->
 
         <section id="room" hidden>
 
@@ -95,7 +89,6 @@
                 Players
             </h3>
 
-
             <ul id="player-list"></ul>
 
 
@@ -103,13 +96,12 @@
                 Ready
             </button>
 
-
             <p id="ready-message"></p>
 
 
-            <!-- ========================== -->
-            <!-- DRAFT -->
-            <!-- ========================== -->
+            <!-- =================================
+                 DRAFT
+            ================================== -->
 
             <section id="draft" hidden>
 
@@ -120,13 +112,28 @@
                     </span>
                 </h2>
 
-
                 <p>
                     Choose your character!
                 </p>
 
-
                 <div id="characters"></div>
+
+            </section>
+
+
+            <!-- =================================
+                 RESULTS
+            ================================== -->
+
+            <section id="results" hidden>
+
+                <h2>
+                    🏆 Draft Results
+                </h2>
+
+                <div id="winner-display"></div>
+
+                <div id="results-container"></div>
 
             </section>
 
@@ -135,18 +142,14 @@
     </main>
 
 
-    <!-- ============================== -->
-    <!-- SOCKET.IO -->
-    <!-- ============================== -->
+    <!-- Socket.IO Client -->
 
     <script
         src="/socket.io/socket.io.js"
     ></script>
 
 
-    <!-- ============================== -->
-    <!-- CLIENT JS -->
-    <!-- ============================== -->
+    <!-- Application JavaScript -->
 
     <script
         src="client.js"

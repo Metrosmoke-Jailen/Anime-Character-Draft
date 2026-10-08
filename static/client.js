@@ -79,6 +79,21 @@ const charactersContainer =
         "#characters"
     );
 
+const results =
+    document.querySelector(
+        "#results"
+    );
+
+const winnerDisplay =
+    document.querySelector(
+        "#winner-display"
+    );
+
+const resultsContainer =
+    document.querySelector(
+        "#results-container"
+    );
+
 
 // ========================================
 // SOCKET CONNECTED
@@ -93,9 +108,23 @@ socket.on(
             socket.id
         );
 
-
         connectionStatus.textContent =
             "🟢 Connected to server";
+
+    }
+);
+
+
+// ========================================
+// LOBBY ERROR
+// ========================================
+
+socket.on(
+    "lobby-error",
+    ({ message }) => {
+
+        lobbyMessage.textContent =
+            message;
 
     }
 );
@@ -117,8 +146,6 @@ joinButton.addEventListener(
                 .trim()
                 .toUpperCase();
 
-
-        // Validate inputs
         if (
             !username ||
             !room
@@ -131,8 +158,9 @@ joinButton.addEventListener(
 
         }
 
+        lobbyMessage.textContent =
+            "Joining room...";
 
-        // Send event to server
         socket.emit(
             "join-room",
             {
@@ -153,26 +181,20 @@ socket.on(
     "room-update",
     ({ players }) => {
 
-        // Hide lobby
-        lobby.hidden = true;
+        lobby.hidden =
+            true;
 
+        roomSection.hidden =
+            false;
 
-        // Show room
-        roomSection.hidden = false;
-
-
-        // Display room code
         roomDisplay.textContent =
             roomCodeInput.value
                 .trim()
                 .toUpperCase();
 
+        playerList.innerHTML =
+            "";
 
-        // Clear current player list
-        playerList.innerHTML = "";
-
-
-        // Render players
         players.forEach(
             (player) => {
 
@@ -181,7 +203,6 @@ socket.on(
                         "li"
                     );
 
-
                 li.textContent =
                     `${player.username} ${
                         player.ready
@@ -189,8 +210,9 @@ socket.on(
                             : "⏳ Not Ready"
                     }`;
 
-
-                playerList.appendChild(li);
+                playerList.appendChild(
+                    li
+                );
 
             }
         );
@@ -207,19 +229,15 @@ readyButton.addEventListener(
     "click",
     () => {
 
-        // Tell server player is ready
         socket.emit(
             "player-ready"
         );
 
-
-        // Prevent duplicate clicks
-        readyButton.disabled = true;
-
+        readyButton.disabled =
+            true;
 
         readyButton.textContent =
             "Ready!";
-
 
         readyMessage.textContent =
             "Waiting for the other players...";
@@ -234,7 +252,10 @@ readyButton.addEventListener(
 
 socket.on(
     "start-draft",
-    ({ round, characters }) => {
+    ({
+        round,
+        characters
+    }) => {
 
         console.log(
             "Draft started!",
@@ -242,20 +263,15 @@ socket.on(
             round
         );
 
-
         readyMessage.textContent =
             "🎴 Draft in progress!";
-
 
         roundNumber.textContent =
             round;
 
+        draft.hidden =
+            false;
 
-        // Show draft section
-        draft.hidden = false;
-
-
-        // Display characters
         renderCharacters(
             characters
         );
@@ -272,9 +288,8 @@ function renderCharacters(
     characters
 ) {
 
-    // Clear previous cards
-    charactersContainer.innerHTML = "";
-
+    charactersContainer.innerHTML =
+        "";
 
     characters.forEach(
         (character) => {
@@ -284,16 +299,12 @@ function renderCharacters(
                     "article"
                 );
 
-
             card.classList.add(
                 "character-card"
             );
 
-
-            // Store character ID
             card.dataset.characterId =
                 character.id;
-
 
             card.innerHTML = `
                 <div class="character-icon">
@@ -317,14 +328,11 @@ function renderCharacters(
                 </button>
             `;
 
-
             const button =
                 card.querySelector(
                     "button"
                 );
 
-
-            // Select character
             button.addEventListener(
                 "click",
                 () => {
@@ -339,7 +347,6 @@ function renderCharacters(
 
                 }
             );
-
 
             charactersContainer.appendChild(
                 card
@@ -363,42 +370,34 @@ socket.on(
         username
     }) => {
 
-        // Find selected character card
         const card =
             document.querySelector(
                 `[data-character-id="${characterId}"]`
             );
 
-
         if (!card) {
             return;
         }
-
 
         const button =
             card.querySelector(
                 "button"
             );
 
-
         if (!button) {
             return;
         }
 
+        button.disabled =
+            true;
 
-        // Prevent selecting again
-        button.disabled = true;
 
-
-        // Determine whether
-        // current player made the pick
         if (
             playerId === socket.id
         ) {
 
             button.textContent =
                 "🔒 You Picked This";
-
 
             card.classList.add(
                 "picked-by-you"
@@ -408,7 +407,6 @@ socket.on(
 
             button.textContent =
                 `🔒 Picked by ${username}`;
-
 
             card.classList.add(
                 "picked-by-other"
@@ -426,21 +424,173 @@ socket.on(
 
 socket.on(
     "next-round",
-    ({ round, characters }) => {
+    ({
+        round,
+        characters
+    }) => {
 
         console.log(
             `Starting round ${round}`
         );
 
-
-        // Update round number
         roundNumber.textContent =
             round;
 
-
-        // Render new characters
         renderCharacters(
             characters
+        );
+
+    }
+);
+
+
+// ========================================
+// RENDER RESULTS
+// ========================================
+
+function renderResults(
+    resultsData,
+    winners
+) {
+
+    resultsContainer.innerHTML =
+        "";
+
+    winnerDisplay.innerHTML =
+        "";
+
+
+    // ====================================
+    // WINNER
+    // ====================================
+
+    if (
+        winners.length === 1
+    ) {
+
+        winnerDisplay.innerHTML = `
+            <div class="winner-banner">
+                🏆
+                <strong>
+                    ${winners[0].username}
+                </strong>
+                wins the draft!
+            </div>
+        `;
+
+    } else {
+
+        const winnerNames =
+            winners
+                .map(
+                    (winner) =>
+                        winner.username
+                )
+                .join(" & ");
+
+        winnerDisplay.innerHTML = `
+            <div class="winner-banner">
+                🤝
+                <strong>
+                    ${winnerNames}
+                </strong>
+                tied!
+            </div>
+        `;
+
+    }
+
+
+    // ====================================
+    // PLAYER RESULTS
+    // ====================================
+
+    resultsData.forEach(
+        (player) => {
+
+            const resultCard =
+                document.createElement(
+                    "article"
+                );
+
+            resultCard.classList.add(
+                "result-card"
+            );
+
+
+            const characterList =
+                player.team
+                    .map(
+                        (character) => `
+                            <li>
+                                ${character.icon}
+                                ${character.name}
+                                <span>
+                                    ${character.power}
+                                </span>
+                            </li>
+                        `
+                    )
+                    .join("");
+
+
+            resultCard.innerHTML = `
+                <h3>
+                    ${player.username}
+                </h3>
+
+                <h4>
+                    Team Power:
+                    ${player.score}
+                </h4>
+
+                <ul>
+                    ${characterList}
+                </ul>
+            `;
+
+
+            resultsContainer.appendChild(
+                resultCard
+            );
+
+        }
+    );
+
+}
+
+
+// ========================================
+// DRAFT ENDED
+// ========================================
+
+socket.on(
+    "draft-ended",
+    ({
+        results: draftResults,
+        winners
+    }) => {
+
+        console.log(
+            "Draft ended!",
+            draftResults
+        );
+
+        draft.hidden =
+            true;
+
+        readyButton.hidden =
+            true;
+
+        readyMessage.textContent =
+            "Draft complete!";
+
+        results.hidden =
+            false;
+
+        renderResults(
+            draftResults,
+            winners
         );
 
     }
