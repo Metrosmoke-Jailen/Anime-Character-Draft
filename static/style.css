@@ -1,38 +1,83 @@
+/* ========================================
+   GLOBAL
+======================================== */
+
 * {
     box-sizing: border-box;
 }
 
 body {
+
     margin: 0;
+
     padding: 40px 20px;
 
-    font-family: Arial, sans-serif;
+    font-family:
+        Arial,
+        sans-serif;
 
     background: #111827;
+
     color: #f9fafb;
 }
 
+
+/* ========================================
+   MAIN
+======================================== */
+
 main {
-    width: min(700px, 100%);
+
+    width: min(
+        900px,
+        100%
+    );
+
     margin: 0 auto;
+
 }
 
+
+/* ========================================
+   HEADINGS
+======================================== */
+
 h1 {
+
     text-align: center;
+
     margin-bottom: 10px;
+
 }
 
 h2 {
+
     margin-top: 0;
+
 }
+
+
+/* ========================================
+   CONNECTION STATUS
+======================================== */
 
 #connection-status {
+
     text-align: center;
+
     margin-bottom: 30px;
+
     color: #9ca3af;
+
 }
 
+
+/* ========================================
+   SECTIONS
+======================================== */
+
 section {
+
     background: #1f2937;
 
     padding: 25px;
@@ -40,66 +85,255 @@ section {
     border-radius: 12px;
 
     margin-bottom: 20px;
+
 }
 
+
+/* ========================================
+   FORM
+======================================== */
+
 label {
+
     display: block;
 
     margin-top: 15px;
+
     margin-bottom: 6px;
 
     font-weight: bold;
+
 }
 
+
 input {
+
     width: 100%;
 
     padding: 12px;
 
     border: 1px solid #4b5563;
+
     border-radius: 8px;
 
     background: #111827;
+
     color: #f9fafb;
 
     font-size: 16px;
+
 }
 
+
+/* ========================================
+   BUTTONS
+======================================== */
+
 button {
+
     margin-top: 20px;
 
     padding: 12px 18px;
 
     border: none;
+
     border-radius: 8px;
 
     background: #7c3aed;
+
     color: white;
 
     font-size: 16px;
+
     font-weight: bold;
 
     cursor: pointer;
+
 }
+
 
 button:hover {
+
     background: #6d28d9;
+
 }
+
 
 button:disabled {
+
     background: #4b5563;
+
     cursor: not-allowed;
+
 }
+
+
+/* ========================================
+   PLAYER LIST
+======================================== */
 
 #player-list {
+
     padding-left: 20px;
+
 }
 
+
 #player-list li {
+
     margin-bottom: 10px;
+
 }
+
+
+/* ========================================
+   MESSAGES
+======================================== */
 
 #lobby-message,
 #ready-message {
+
     margin-top: 15px;
+
+}
+
+
+/* ========================================
+   CHARACTER GRID
+======================================== */
+
+#characters {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            1fr
+        );
+
+    gap: 20px;
+
+    margin-top: 20px;
+
+}
+
+
+/* ========================================
+   CHARACTER CARD
+======================================== */
+
+.character-card {
+
+    padding: 20px;
+
+    background: #111827;
+
+    border: 1px solid #374151;
+
+    border-radius: 12px;
+
+    text-align: center;
+
+    transition:
+        transform 0.2s,
+        opacity 0.2s,
+        border-color 0.2s;
+
+}
+
+
+.character-card:hover {
+
+    transform:
+        translateY(-4px);
+
+}
+
+
+/* ========================================
+   CHARACTER ICON
+======================================== */
+
+.character-icon {
+
+    font-size: 48px;
+
+    margin-bottom: 10px;
+
+}
+
+
+/* ========================================
+   CHARACTER TEXT
+======================================== */
+
+.character-card h3 {
+
+    margin:
+        10px 0 5px;
+
+}
+
+
+.character-card p {
+
+    margin:
+        6px 0;
+
+    color: #d1d5db;
+
+}
+
+
+/* ========================================
+   CHARACTER BUTTON
+======================================== */
+
+.character-card button {
+
+    width: 100%;
+
+}
+
+
+/* ========================================
+   PICKED STATES
+======================================== */
+
+.character-card.picked-by-you {
+
+    border:
+        2px solid #22c55e;
+
+    opacity: 0.8;
+
+}
+
+
+.character-card.picked-by-other {
+
+    border:
+        2px solid #ef4444;
+
+    opacity: 0.65;
+
+}
+
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (
+    max-width: 700px
+) {
+
+    #characters {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
 }

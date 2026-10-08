@@ -12,7 +12,10 @@
 
     <title>Anime Character Draft</title>
 
-    <link rel="stylesheet" href="style.css">
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
 
 </head>
 
@@ -20,20 +23,29 @@
 
     <main>
 
-        <h1>🎴 Anime Character Draft</h1>
+        <!-- ============================== -->
+        <!-- HEADER -->
+        <!-- ============================== -->
+
+        <h1>
+            🎴 Anime Character Draft
+        </h1>
 
         <p id="connection-status">
             Connecting to server...
         </p>
 
 
-        <!-- ========================= -->
+        <!-- ============================== -->
         <!-- LOBBY -->
-        <!-- ========================= -->
+        <!-- ============================== -->
 
         <section id="lobby">
 
-            <h2>Join a Draft</h2>
+            <h2>
+                Join a Draft
+            </h2>
+
 
             <label for="username">
                 Username
@@ -61,14 +73,15 @@
                 Join Room
             </button>
 
+
             <p id="lobby-message"></p>
 
         </section>
 
 
-        <!-- ========================= -->
+        <!-- ============================== -->
         <!-- ROOM -->
-        <!-- ========================= -->
+        <!-- ============================== -->
 
         <section id="room" hidden>
 
@@ -82,6 +95,7 @@
                 Players
             </h3>
 
+
             <ul id="player-list"></ul>
 
 
@@ -89,18 +103,54 @@
                 Ready
             </button>
 
+
             <p id="ready-message"></p>
+
+
+            <!-- ========================== -->
+            <!-- DRAFT -->
+            <!-- ========================== -->
+
+            <section id="draft" hidden>
+
+                <h2>
+                    Round
+                    <span id="round-number">
+                        1
+                    </span>
+                </h2>
+
+
+                <p>
+                    Choose your character!
+                </p>
+
+
+                <div id="characters"></div>
+
+            </section>
 
         </section>
 
     </main>
 
 
-    <!-- Socket.IO client library -->
-    <script src="/socket.io/socket.io.js"></script>
+    <!-- ============================== -->
+    <!-- SOCKET.IO -->
+    <!-- ============================== -->
 
-    <!-- Our client JavaScript -->
-    <script src="client.js"></script>
+    <script
+        src="/socket.io/socket.io.js"
+    ></script>
+
+
+    <!-- ============================== -->
+    <!-- CLIENT JS -->
+    <!-- ============================== -->
+
+    <script
+        src="client.js"
+    ></script>
 
 </body>
 
