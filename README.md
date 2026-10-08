@@ -22,21 +22,21 @@ Without WebSockets, players would need to constantly refresh or request updates 
 
 Event Flow:
 JOIN ROOM
-    ↓ join-room
+   ->
 SERVER
-    ↓ room-update
+   ->
 PLAYERS READY
-    ↓ player-ready
+   ->
 SERVER
-    ↓ start-draft
+   ->
 DRAFT
-    ↓ pick-character
+   ->
 SERVER
-    ↓ draft-update
+   ->
 ALL PLAYERS
-    ↓
+   ->
 5 ROUNDS
-    ↓ draft-ended
+   ->
 FINAL RESULTS
 
 Installation & Running
