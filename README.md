@@ -1,4 +1,4 @@
-🎴 Anime Character Draft
+Anime Character Draft
 
 Anime Character Draft is a multiplayer anime-themed drafting game built with Node.js, Express, and Socket.IO. Players join the same room, get ready, and compete across 5 rounds to build the strongest anime character team.
 
@@ -19,39 +19,6 @@ draft-update → Server instantly broadcasts the selection to all players.
 draft-ended → Server sends the final results.
 
 Without WebSockets, players would need to constantly refresh or request updates from the server. Socket.IO allows the game state to update instantly.
-
-Labeled App Mockup
-┌─────────────────────────────────────────────┐
-│          🎴 Anime Character Draft           │
-│                                             │
-│             🟢 Connected                   │
-│                                             │
-│  ┌───────────────────────────────────────┐  │
-│  │             JOIN A DRAFT              │  │
-│  │                                       │  │
-│  │ Username: [ Jailen                ]   │  │
-│  │ Room Code: [ A7K92                 ]  │  │
-│  │                                       │  │
-│  │             [ Join Room ]             │  │
-│  └───────────────────────────────────────┘  │
-│                                             │
-│  Players:                                   │
-│  • Jailen       ✅ Ready                    │
-│  • Player2      ✅ Ready                    │
-│                                             │
-│  ┌───────────────────────────────────────┐  │
-│  │              ROUND 1                  │  │
-│  │                                       │  │
-│  │   ⚡ Goku    👁️ Gojo    🏴‍☠️ Luffy    │  │
-│  │   [Select]   [Select]   [Select]      │  │
-│  │                                       │  │
-│  │          ⏱️ 15 seconds                │  │
-│  └───────────────────────────────────────┘  │
-│                                             │
-│  🃏 My Team                                 │
-│  Goku ─────────────── 98                   │
-│  Team Power: 98                             │
-└─────────────────────────────────────────────┘
 
 Event Flow:
 JOIN ROOM
