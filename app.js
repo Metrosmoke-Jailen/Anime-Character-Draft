@@ -9,11 +9,6 @@ const io = new Server(server);
 
 app.use(express.static("static"));
 
-
-// ========================================
-// GAME DATA
-// ========================================
-
 const rooms = {};
 
 const characters = [
@@ -81,11 +76,6 @@ const characters = [
         icon: "🪚"
     }
 ];
-
-
-// ========================================
-// HELPER FUNCTIONS
-// ========================================
 
 function getPlayerRoom(socket) {
 
@@ -155,11 +145,6 @@ function getRandomCharacters(
 
 }
 
-
-// ========================================
-// START DRAFT
-// ========================================
-
 function startDraft(room) {
 
     const roomData =
@@ -193,11 +178,6 @@ function startDraft(room) {
     );
 
 }
-
-
-// ========================================
-// NEXT ROUND
-// ========================================
 
 function nextRound(room) {
 
@@ -239,11 +219,6 @@ function nextRound(room) {
 
 }
 
-
-// ========================================
-// TEAM POWER
-// ========================================
-
 function calculateTeamPower(
     team
 ) {
@@ -264,11 +239,6 @@ function calculateTeamPower(
     );
 
 }
-
-
-// ========================================
-// END DRAFT
-// ========================================
 
 function endDraft(room) {
 
@@ -343,11 +313,6 @@ function endDraft(room) {
 
 }
 
-
-// ========================================
-// SOCKET.IO
-// ========================================
-
 io.on(
     "connection",
     (socket) => {
@@ -356,11 +321,6 @@ io.on(
             "Player connected:",
             socket.id
         );
-
-
-        // ====================================
-        // JOIN ROOM
-        // ====================================
 
         socket.on(
             "join-room",
@@ -373,11 +333,6 @@ io.on(
                     room
                         .trim()
                         .toUpperCase();
-
-
-                // ====================================
-                // VALIDATE INPUT
-                // ====================================
 
                 if (
                     !username ||
@@ -395,11 +350,6 @@ io.on(
                     return;
 
                 }
-
-
-                // ====================================
-                // CREATE ROOM
-                // ====================================
 
                 if (!rooms[room]) {
 
@@ -429,11 +379,6 @@ io.on(
                 const roomData =
                     rooms[room];
 
-
-                // ====================================
-                // CHECK GAME STATE
-                // ====================================
-
                 if (
                     roomData.state !==
                     "waiting"
@@ -450,11 +395,6 @@ io.on(
                     return;
 
                 }
-
-
-                // ====================================
-                // CHECK ROOM SIZE
-                // ====================================
 
                 if (
                     Object.keys(
@@ -473,11 +413,6 @@ io.on(
                     return;
 
                 }
-
-
-                // ====================================
-                // CHECK USERNAME
-                // ====================================
 
                 const usernameTaken =
                     Object.values(
@@ -505,11 +440,6 @@ io.on(
 
                 }
 
-
-                // ====================================
-                // ADD PLAYER
-                // ====================================
-
                 roomData.players[
                     socket.id
                 ] = {
@@ -531,20 +461,13 @@ io.on(
 
                 };
 
-
                 socket.join(
                     room
                 );
 
-
                 console.log(
                     `${username} joined room ${room}`
                 );
-
-
-                // ====================================
-                // UPDATE ROOM
-                // ====================================
 
                 io.to(room).emit(
                     "room-update",
@@ -558,11 +481,6 @@ io.on(
 
             }
         );
-
-
-        // ====================================
-        // PLAYER READY
-        // ====================================
 
         socket.on(
             "player-ready",
@@ -640,11 +558,6 @@ io.on(
             }
         );
 
-
-        // ====================================
-        // PICK CHARACTER
-        // ====================================
-
         socket.on(
             "pick-character",
             ({ characterId }) => {
@@ -665,11 +578,6 @@ io.on(
                     return;
                 }
 
-
-                // ====================================
-                // CHECK GAME STATE
-                // ====================================
-
                 if (
                     roomData.state !==
                     "drafting"
@@ -678,11 +586,6 @@ io.on(
                     return;
 
                 }
-
-
-                // ====================================
-                // CHECK CHARACTER
-                // ====================================
 
                 const character =
                     roomData.currentCharacters.find(
@@ -697,11 +600,6 @@ io.on(
 
                 }
 
-
-                // ====================================
-                // CHECK IF ALREADY PICKED
-                // ====================================
-
                 if (
                     character.pickedBy
                 ) {
@@ -709,11 +607,6 @@ io.on(
                     return;
 
                 }
-
-
-                // ====================================
-                // GET PLAYER
-                // ====================================
 
                 const player =
                     roomData.players[
@@ -725,11 +618,6 @@ io.on(
                     return;
 
                 }
-
-
-                // ====================================
-                // PICK CHARACTER
-                // ====================================
 
                 character.pickedBy =
                     socket.id;
@@ -747,11 +635,6 @@ io.on(
                     `${player.username} picked ${character.name}`
                 );
 
-
-                // ====================================
-                // BROADCAST PICK
-                // ====================================
-
                 io.to(room).emit(
                     "draft-update",
                     {
@@ -765,11 +648,6 @@ io.on(
                             player.username
                     }
                 );
-
-
-                // ====================================
-                // CHECK ROUND COMPLETE
-                // ====================================
 
                 if (
                     allPlayersPicked(
@@ -801,11 +679,6 @@ io.on(
             }
         );
 
-
-        // ====================================
-        // DISCONNECT
-        // ====================================
-
         socket.on(
             "disconnect",
             () => {
@@ -817,11 +690,6 @@ io.on(
 
                 let playerRoom =
                     null;
-
-
-                // ====================================
-                // FIND PLAYER'S ROOM
-                // ====================================
 
                 for (
                     const roomName in rooms
@@ -862,19 +730,9 @@ io.on(
                     `${player.username} left room ${playerRoom}`
                 );
 
-
-                // ====================================
-                // REMOVE PLAYER
-                // ====================================
-
                 delete roomData.players[
                     socket.id
                 ];
-
-
-                // ====================================
-                // UPDATE REMAINING PLAYERS
-                // ====================================
 
                 io.to(playerRoom).emit(
                     "room-update",
@@ -885,11 +743,6 @@ io.on(
                             )
                     }
                 );
-
-
-                // ====================================
-                // DELETE EMPTY ROOM
-                // ====================================
 
                 if (
                     Object.keys(
@@ -912,11 +765,6 @@ io.on(
 
     }
 );
-
-
-// ========================================
-// START SERVER
-// ========================================
 
 const PORT = 3000;
 

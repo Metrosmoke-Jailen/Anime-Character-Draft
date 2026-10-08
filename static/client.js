@@ -1,13 +1,4 @@
-// ========================================
-// SOCKET CONNECTION
-// ========================================
-
 const socket = io();
-
-
-// ========================================
-// DOM ELEMENTS
-// ========================================
 
 const connectionStatus =
     document.querySelector(
@@ -94,11 +85,6 @@ const resultsContainer =
         "#results-container"
     );
 
-
-// ========================================
-// SOCKET CONNECTED
-// ========================================
-
 socket.on(
     "connect",
     () => {
@@ -114,11 +100,6 @@ socket.on(
     }
 );
 
-
-// ========================================
-// LOBBY ERROR
-// ========================================
-
 socket.on(
     "lobby-error",
     ({ message }) => {
@@ -128,11 +109,6 @@ socket.on(
 
     }
 );
-
-
-// ========================================
-// JOIN ROOM
-// ========================================
 
 joinButton.addEventListener(
     "click",
@@ -171,11 +147,6 @@ joinButton.addEventListener(
 
     }
 );
-
-
-// ========================================
-// ROOM UPDATE
-// ========================================
 
 socket.on(
     "room-update",
@@ -220,11 +191,6 @@ socket.on(
     }
 );
 
-
-// ========================================
-// READY BUTTON
-// ========================================
-
 readyButton.addEventListener(
     "click",
     () => {
@@ -244,11 +210,6 @@ readyButton.addEventListener(
 
     }
 );
-
-
-// ========================================
-// START DRAFT
-// ========================================
 
 socket.on(
     "start-draft",
@@ -278,11 +239,6 @@ socket.on(
 
     }
 );
-
-
-// ========================================
-// RENDER CHARACTER CARDS
-// ========================================
 
 function renderCharacters(
     characters
@@ -357,11 +313,6 @@ function renderCharacters(
 
 }
 
-
-// ========================================
-// DRAFT UPDATE
-// ========================================
-
 socket.on(
     "draft-update",
     ({
@@ -417,11 +368,6 @@ socket.on(
     }
 );
 
-
-// ========================================
-// NEXT ROUND
-// ========================================
-
 socket.on(
     "next-round",
     ({
@@ -443,11 +389,6 @@ socket.on(
     }
 );
 
-
-// ========================================
-// RENDER RESULTS
-// ========================================
-
 function renderResults(
     resultsData,
     winners
@@ -458,11 +399,6 @@ function renderResults(
 
     winnerDisplay.innerHTML =
         "";
-
-
-    // ====================================
-    // WINNER
-    // ====================================
 
     if (
         winners.length === 1
@@ -499,11 +435,6 @@ function renderResults(
         `;
 
     }
-
-
-    // ====================================
-    // PLAYER RESULTS
-    // ====================================
 
     resultsData.forEach(
         (player) => {
@@ -558,11 +489,6 @@ function renderResults(
     );
 
 }
-
-
-// ========================================
-// DRAFT ENDED
-// ========================================
 
 socket.on(
     "draft-ended",
