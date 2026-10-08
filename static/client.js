@@ -1,4 +1,6 @@
-const socket = io();
+const socket = io(
+    "https://anime-character-draft.onrender.com"
+);
 
 const $ = selector =>
     document.querySelector(selector);
