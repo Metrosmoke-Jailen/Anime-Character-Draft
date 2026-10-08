@@ -8,7 +8,7 @@ const io = new Server(server);
 
 app.use(express.static("static"));
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const rooms = {};
 
 const characters = [
@@ -399,6 +399,6 @@ io.on("connection", socket => {
 
 server.listen(PORT, () => {
     console.log(
-        `Anime Character Draft running at http://localhost:${PORT}`
+        `Anime Character Draft running on port ${PORT}`
     );
 });
