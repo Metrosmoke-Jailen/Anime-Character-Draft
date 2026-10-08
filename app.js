@@ -85,7 +85,6 @@ function getPlayerRoom(socket) {
 
 }
 
-
 function allPlayersReady(room) {
 
     const players =
@@ -103,7 +102,6 @@ function allPlayersReady(room) {
 
 }
 
-
 function allPlayersPicked(room) {
 
     const players =
@@ -118,7 +116,6 @@ function allPlayersPicked(room) {
     );
 
 }
-
 
 function getRandomCharacters(
     amount,
