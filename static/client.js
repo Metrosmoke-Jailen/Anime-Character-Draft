@@ -1,316 +1,181 @@
 const socket = io();
 
-const connectionStatus =
-    document.querySelector(
-        "#connection-status"
-    );
+const $ = selector =>
+    document.querySelector(selector);
 
-const usernameInput =
-    document.querySelector(
-        "#username"
-    );
+const connectionStatus = $("#connection-status");
+const usernameInput = $("#username");
+const roomCodeInput = $("#room-code");
+const joinButton = $("#join-button");
 
-const roomCodeInput =
-    document.querySelector(
-        "#room-code"
-    );
+const lobby = $("#lobby");
+const lobbyMessage = $("#lobby-message");
 
-const joinButton =
-    document.querySelector(
-        "#join-button"
-    );
+const roomSection = $("#room");
+const roomDisplay = $("#room-display");
+const playerList = $("#player-list");
 
-const lobby =
-    document.querySelector(
-        "#lobby"
-    );
+const readyButton = $("#ready-button");
+const readyMessage = $("#ready-message");
 
-const roomSection =
-    document.querySelector(
-        "#room"
-    );
+const teamSection = $("#team-section");
+const myTeam = $("#my-team");
+const teamPower = $("#team-power");
 
-const lobbyMessage =
-    document.querySelector(
-        "#lobby-message"
-    );
+const draft = $("#draft");
+const roundNumber = $("#round-number");
+const draftMessage = $("#draft-message");
+const charactersContainer = $("#characters");
 
-const roomDisplay =
-    document.querySelector(
-        "#room-display"
-    );
+const timerValue = $("#timer-value");
+const pickNotification = $("#pick-notification");
 
-const playerList =
-    document.querySelector(
-        "#player-list"
-    );
+const results = $("#results");
+const winnerDisplay = $("#winner-display");
+const resultsContainer = $("#results-container");
 
-const readyButton =
-    document.querySelector(
-        "#ready-button"
-    );
+let myTeamCharacters = [];
+let timerInterval = null;
 
-const readyMessage =
-    document.querySelector(
-        "#ready-message"
-    );
+socket.on("connect", () => {
+    connectionStatus.textContent =
+        "🟢 Connected to server";
+});
 
-const draft =
-    document.querySelector(
-        "#draft"
-    );
+socket.on("lobby-error", ({ message }) => {
+    lobbyMessage.textContent = message;
+});
 
-const roundNumber =
-    document.querySelector(
-        "#round-number"
-    );
+joinButton.addEventListener("click", () => {
+    const username = usernameInput.value.trim();
+    const room = roomCodeInput.value.trim().toUpperCase();
 
-const charactersContainer =
-    document.querySelector(
-        "#characters"
-    );
-
-const results =
-    document.querySelector(
-        "#results"
-    );
-
-const winnerDisplay =
-    document.querySelector(
-        "#winner-display"
-    );
-
-const resultsContainer =
-    document.querySelector(
-        "#results-container"
-    );
-
-socket.on(
-    "connect",
-    () => {
-
-        console.log(
-            "Connected to server:",
-            socket.id
-        );
-
-        connectionStatus.textContent =
-            "🟢 Connected to server";
-
-    }
-);
-
-socket.on(
-    "lobby-error",
-    ({ message }) => {
-
+    if (!username || !room) {
         lobbyMessage.textContent =
-            message;
-
+            "Please enter a username and room code.";
+        return;
     }
-);
 
-joinButton.addEventListener(
-    "click",
-    () => {
+    lobbyMessage.textContent = "Joining room...";
 
-        const username =
-            usernameInput.value.trim();
+    socket.emit("join-room", {
+        username,
+        room
+    });
+});
 
-        const room =
-            roomCodeInput.value
-                .trim()
-                .toUpperCase();
+socket.on("room-update", ({ players }) => {
+    lobby.hidden = true;
+    roomSection.hidden = false;
 
-        if (
-            !username ||
-            !room
-        ) {
+    roomDisplay.textContent =
+        roomCodeInput.value.trim().toUpperCase();
 
-            lobbyMessage.textContent =
-                "Please enter a username and room code.";
+    playerList.innerHTML = "";
 
-            return;
+    players.forEach(player => {
+        const li = document.createElement("li");
 
-        }
+        li.textContent =
+            `${player.username} ${
+                player.ready
+                    ? "✅ Ready"
+                    : "⏳ Not Ready"
+            }`;
 
-        lobbyMessage.textContent =
-            "Joining room...";
+        playerList.appendChild(li);
+    });
+});
 
-        socket.emit(
-            "join-room",
-            {
-                username,
-                room
-            }
-        );
+readyButton.addEventListener("click", () => {
+    socket.emit("player-ready");
 
-    }
-);
-
-socket.on(
-    "room-update",
-    ({ players }) => {
-
-        lobby.hidden =
-            true;
-
-        roomSection.hidden =
-            false;
-
-        roomDisplay.textContent =
-            roomCodeInput.value
-                .trim()
-                .toUpperCase();
-
-        playerList.innerHTML =
-            "";
-
-        players.forEach(
-            (player) => {
-
-                const li =
-                    document.createElement(
-                        "li"
-                    );
-
-                li.textContent =
-                    `${player.username} ${
-                        player.ready
-                            ? "✅ Ready"
-                            : "⏳ Not Ready"
-                    }`;
-
-                playerList.appendChild(
-                    li
-                );
-
-            }
-        );
-
-    }
-);
-
-readyButton.addEventListener(
-    "click",
-    () => {
-
-        socket.emit(
-            "player-ready"
-        );
-
-        readyButton.disabled =
-            true;
-
-        readyButton.textContent =
-            "Ready!";
-
-        readyMessage.textContent =
-            "Waiting for the other players...";
-
-    }
-);
+    readyButton.disabled = true;
+    readyButton.textContent = "Ready!";
+    readyMessage.textContent =
+        "Waiting for the other players...";
+});
 
 socket.on(
     "start-draft",
-    ({
-        round,
-        characters
-    }) => {
+    ({ round, characters }) => {
 
-        console.log(
-            "Draft started!",
-            "Round:",
-            round
-        );
+        draft.hidden = false;
+        draftMessage.textContent =
+            "Choose your character!";
+        pickNotification.textContent = "";
+        roundNumber.textContent = round;
 
-        readyMessage.textContent =
-            "🎴 Draft in progress!";
-
-        roundNumber.textContent =
-            round;
-
-        draft.hidden =
-            false;
-
-        renderCharacters(
-            characters
-        );
-
+        renderCharacters(characters);
     }
 );
 
-function renderCharacters(
-    characters
-) {
+function renderCharacters(characters) {
+    charactersContainer.innerHTML = "";
 
-    charactersContainer.innerHTML =
-        "";
+    characters.forEach(character => {
+        const card =
+            document.createElement("article");
 
-    characters.forEach(
-        (character) => {
+        card.className = "character-card";
 
-            const card =
-                document.createElement(
-                    "article"
+        card.dataset.characterId =
+            character.id;
+
+        card.dataset.power =
+            character.power;
+
+        card.innerHTML = `
+            <div class="character-icon">
+                ${character.icon}
+            </div>
+
+            <h3>${character.name}</h3>
+
+            <p>${character.anime}</p>
+
+            <p>Power: ${character.power}</p>
+
+            <button>Select</button>
+        `;
+
+        card.querySelector("button")
+            .addEventListener("click", () => {
+
+                socket.emit(
+                    "pick-character",
+                    {
+                        characterId:
+                            character.id
+                    }
                 );
 
-            card.classList.add(
-                "character-card"
-            );
+            });
 
-            card.dataset.characterId =
-                character.id;
+        charactersContainer.appendChild(card);
+    });
+}
 
-            card.innerHTML = `
-                <div class="character-icon">
-                    ${character.icon}
-                </div>
+socket.on("round-timer", ({ seconds }) => {
+    startClientTimer(seconds);
+});
 
-                <h3>
-                    ${character.name}
-                </h3>
+function startClientTimer(seconds) {
+    clearInterval(timerInterval);
 
-                <p>
-                    ${character.anime}
-                </p>
+    let remaining = seconds;
+    timerValue.textContent = remaining;
 
-                <p>
-                    Power: ${character.power}
-                </p>
+    timerInterval = setInterval(() => {
+        remaining--;
 
-                <button>
-                    Select
-                </button>
-            `;
+        timerValue.textContent =
+            Math.max(remaining, 0);
 
-            const button =
-                card.querySelector(
-                    "button"
-                );
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    socket.emit(
-                        "pick-character",
-                        {
-                            characterId:
-                                character.id
-                        }
-                    );
-
-                }
-            );
-
-            charactersContainer.appendChild(
-                card
-            );
-
+        if (remaining <= 0) {
+            clearInterval(timerInterval);
         }
-    );
-
+    }, 1000);
 }
 
 socket.on(
@@ -318,74 +183,180 @@ socket.on(
     ({
         characterId,
         playerId,
-        username
+        username,
+        automatic
     }) => {
 
-        const card =
-            document.querySelector(
-                `[data-character-id="${characterId}"]`
-            );
+        const card = document.querySelector(
+            `[data-character-id="${characterId}"]`
+        );
 
-        if (!card) {
-            return;
-        }
+        if (!card) return;
 
         const button =
-            card.querySelector(
-                "button"
-            );
+            card.querySelector("button");
 
-        if (!button) {
-            return;
-        }
+        if (!button) return;
 
-        button.disabled =
-            true;
+        button.disabled = true;
 
+        const characterName =
+            card.querySelector("h3")
+                .textContent;
 
-        if (
-            playerId === socket.id
-        ) {
+        if (playerId === socket.id) {
 
             button.textContent =
-                "🔒 You Picked This";
+                automatic
+                    ? "⏰ Auto Pick"
+                    : "🔒 You Picked This";
 
             card.classList.add(
                 "picked-by-you"
             );
 
+            myTeamCharacters.push({
+                name: characterName,
+
+                icon:
+                    card.querySelector(
+                        ".character-icon"
+                    ).textContent,
+
+                power:
+                    Number(
+                        card.dataset.power
+                    )
+            });
+
+            renderMyTeam();
+
+            pickNotification.textContent =
+                automatic
+                    ? `⏰ Time expired. You received ${characterName}.`
+                    : `✅ You picked ${characterName}.`;
+
         } else {
 
             button.textContent =
-                `🔒 Picked by ${username}`;
+                automatic
+                    ? `⏰ ${username} auto-picked`
+                    : `🔒 Picked by ${username}`;
 
             card.classList.add(
                 "picked-by-other"
             );
 
+            pickNotification.textContent =
+                automatic
+                    ? `⏰ ${username} was assigned ${characterName}.`
+                    : `⚔️ ${username} picked ${characterName}!`;
         }
+    }
+);
 
+function renderMyTeam() {
+    if (!myTeamCharacters.length) {
+        myTeam.innerHTML =
+            "<p>No characters drafted yet.</p>";
+
+        teamPower.textContent = "0";
+        return;
+    }
+
+    myTeam.innerHTML = "";
+
+    const total = myTeamCharacters.reduce(
+        (sum, character) =>
+            sum + character.power,
+        0
+    );
+
+    myTeamCharacters.forEach(character => {
+        const element =
+            document.createElement("div");
+
+        element.className =
+            "team-character";
+
+        element.innerHTML = `
+            <span>
+                ${character.icon}
+                ${character.name}
+            </span>
+
+            <strong>
+                ${character.power}
+            </strong>
+        `;
+
+        myTeam.appendChild(element);
+    });
+
+    teamPower.textContent = total;
+}
+
+socket.on(
+    "next-round",
+    ({ round, characters }) => {
+
+        roundNumber.textContent = round;
+
+        draftMessage.textContent =
+            `⚔️ Round ${round}! Choose your character!`;
+
+        pickNotification.textContent = "";
+
+        renderCharacters(characters);
     }
 );
 
 socket.on(
-    "next-round",
+    "player-disconnected",
+    ({ username }) => {
+
+        pickNotification.textContent =
+            `⚠️ ${username} disconnected.`;
+    }
+);
+
+socket.on(
+    "draft-cancelled",
+    ({ message }) => {
+
+        clearInterval(timerInterval);
+
+        draft.hidden = true;
+        readyButton.hidden = true;
+
+        readyMessage.textContent = message;
+
+        pickNotification.textContent =
+            "⚠️ Draft cancelled.";
+    }
+);
+
+socket.on(
+    "draft-ended",
     ({
-        round,
-        characters
+        results: draftResults,
+        winners
     }) => {
 
-        console.log(
-            `Starting round ${round}`
+        clearInterval(timerInterval);
+
+        draft.hidden = true;
+        readyButton.hidden = true;
+
+        readyMessage.textContent =
+            "Draft complete!";
+
+        results.hidden = false;
+
+        renderResults(
+            draftResults,
+            winners
         );
-
-        roundNumber.textContent =
-            round;
-
-        renderCharacters(
-            characters
-        );
-
     }
 );
 
@@ -393,16 +364,10 @@ function renderResults(
     resultsData,
     winners
 ) {
+    winnerDisplay.innerHTML = "";
+    resultsContainer.innerHTML = "";
 
-    resultsContainer.innerHTML =
-        "";
-
-    winnerDisplay.innerHTML =
-        "";
-
-    if (
-        winners.length === 1
-    ) {
+    if (winners.length === 1) {
 
         winnerDisplay.innerHTML = `
             <div class="winner-banner">
@@ -416,108 +381,53 @@ function renderResults(
 
     } else {
 
-        const winnerNames =
-            winners
-                .map(
-                    (winner) =>
-                        winner.username
-                )
-                .join(" & ");
+        const names = winners
+            .map(winner => winner.username)
+            .join(" & ");
 
         winnerDisplay.innerHTML = `
             <div class="winner-banner">
                 🤝
-                <strong>
-                    ${winnerNames}
-                </strong>
+                <strong>${names}</strong>
                 tied!
             </div>
         `;
-
     }
 
-    resultsData.forEach(
-        (player) => {
+    resultsData.forEach(player => {
 
-            const resultCard =
-                document.createElement(
-                    "article"
-                );
+        const card =
+            document.createElement("article");
 
-            resultCard.classList.add(
-                "result-card"
-            );
+        card.className = "result-card";
 
+        const team = player.team
+            .map(character => `
+                <li>
+                    <span>
+                        ${character.icon}
+                        ${character.name}
+                    </span>
 
-            const characterList =
-                player.team
-                    .map(
-                        (character) => `
-                            <li>
-                                ${character.icon}
-                                ${character.name}
-                                <span>
-                                    ${character.power}
-                                </span>
-                            </li>
-                        `
-                    )
-                    .join("");
+                    <span>
+                        ${character.power}
+                    </span>
+                </li>
+            `)
+            .join("");
 
+        card.innerHTML = `
+            <h3>${player.username}</h3>
 
-            resultCard.innerHTML = `
-                <h3>
-                    ${player.username}
-                </h3>
+            <h4>
+                Team Power: ${player.score}
+            </h4>
 
-                <h4>
-                    Team Power:
-                    ${player.score}
-                </h4>
+            <ul>
+                ${team}
+            </ul>
+        `;
 
-                <ul>
-                    ${characterList}
-                </ul>
-            `;
-
-
-            resultsContainer.appendChild(
-                resultCard
-            );
-
-        }
-    );
-
+        resultsContainer.appendChild(card);
+    });
 }
-
-socket.on(
-    "draft-ended",
-    ({
-        results: draftResults,
-        winners
-    }) => {
-
-        console.log(
-            "Draft ended!",
-            draftResults
-        );
-
-        draft.hidden =
-            true;
-
-        readyButton.hidden =
-            true;
-
-        readyMessage.textContent =
-            "Draft complete!";
-
-        results.hidden =
-            false;
-
-        renderResults(
-            draftResults,
-            winners
-        );
-
-    }
-);

@@ -1,134 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>
-        Anime Character Draft
-    </title>
+    <title>Anime Character Draft</title>
 
     <link
         rel="stylesheet"
         href="style.css"
     >
-
 </head>
 
 <body>
 
-    <main>
+<main>
 
-        <h1>
-            🎴 Anime Character Draft
-        </h1>
+    <h1>🎴 Anime Character Draft</h1>
 
-        <p id="connection-status">
-            Connecting to server...
-        </p>
+    <p id="connection-status">
+        Connecting to server...
+    </p>
 
-        <section id="lobby">
+    <section id="lobby">
 
-            <h2>
-                Join a Draft
-            </h2>
+        <h2>Join a Draft</h2>
 
-            <label for="username">
-                Username
-            </label>
+        <label for="username">
+            Username
+        </label>
 
-            <input
-                id="username"
-                type="text"
-                placeholder="Enter your username"
-            >
+        <input
+            id="username"
+            type="text"
+            placeholder="Enter your username"
+        >
 
-            <label for="room-code">
-                Room Code
-            </label>
+        <label for="room-code">
+            Room Code
+        </label>
 
-            <input
-                id="room-code"
-                type="text"
-                placeholder="Example: A7K92"
-            >
+        <input
+            id="room-code"
+            type="text"
+            placeholder="Example: A7K92"
+        >
 
-            <button id="join-button">
-                Join Room
-            </button>
+        <button id="join-button">
+            Join Room
+        </button>
 
-            <p id="lobby-message"></p>
+        <p id="lobby-message"></p>
 
-        </section>
+    </section>
 
-        <section id="room" hidden>
+    <section id="room" hidden>
 
-            <h2>
-                Room:
-                <span id="room-display"></span>
-            </h2>
+        <h2>
+            Room:
+            <span id="room-display"></span>
+        </h2>
 
+        <h3>Players</h3>
 
-            <h3>
-                Players
-            </h3>
+        <ul id="player-list"></ul>
 
-            <ul id="player-list"></ul>
+        <button id="ready-button">
+            Ready
+        </button>
 
+        <p id="ready-message"></p>
 
-            <button id="ready-button">
-                Ready
-            </button>
+        <section id="team-section">
 
-            <p id="ready-message"></p>
+            <h3>🃏 My Team</h3>
 
-            <section id="draft" hidden>
+            <div id="my-team">
+                <p>No characters drafted yet.</p>
+            </div>
 
-                <h2>
-                    Round
-                    <span id="round-number">
-                        1
-                    </span>
-                </h2>
-
-                <p>
-                    Choose your character!
-                </p>
-
-                <div id="characters"></div>
-
-            </section>
-
-            <section id="results" hidden>
-
-                <h2>
-                    🏆 Draft Results
-                </h2>
-
-                <div id="winner-display"></div>
-
-                <div id="results-container"></div>
-
-            </section>
+            <p>
+                Team Power:
+                <strong id="team-power">0</strong>
+            </p>
 
         </section>
 
-    </main>
+        <section id="draft" hidden>
 
-    <script
-        src="/socket.io/socket.io.js"
-    ></script>
+            <h2>
+                Round
+                <span id="round-number">1</span>
+            </h2>
 
-    <script
-        src="client.js"
-    ></script>
+            <div id="timer">
+                ⏱️
+                <span id="timer-value">15</span>
+            </div>
+
+            <p id="draft-message">
+                Choose your character!
+            </p>
+
+            <p id="pick-notification"></p>
+
+            <div id="characters"></div>
+
+        </section>
+
+        <section id="results" hidden>
+
+            <h2>🏆 Draft Results</h2>
+
+            <div id="winner-display"></div>
+
+            <div id="results-container"></div>
+
+        </section>
+
+    </section>
+
+</main>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="client.js"></script>
 
 </body>
-
 </html>
