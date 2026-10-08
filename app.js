@@ -7,7 +7,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: "https://vercel.com/jailen/anime-character-draft-static"
+        origin: "https://anime-character-draft-static.vercel.app"
     }
 });
 
